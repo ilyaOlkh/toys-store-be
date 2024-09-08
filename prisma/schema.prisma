@@ -1,0 +1,132 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider  = "postgresql"
+    url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+    directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model users {
+    id            Int         @id @default(autoincrement())
+    first_name    String
+    last_name     String
+    email         String      @unique
+    password_hash String
+    created_at    DateTime    @default(now())
+    orders        orders[]
+    favorites     favorites[]
+    cart_items    cart[]
+    comments      comments[]
+}
+
+model orders {
+    id             Int      @id @default(autoincrement())
+    user_id        Int?
+    first_name     String
+    last_name      String
+    street_address String
+    city           String
+    state          String?
+    zip_code       String
+    phone          String
+    email          String
+    payment_method String
+    paid           Boolean  @default(false)
+    created_at     DateTime @default(now())
+    user           users?   @relation(fields: [user_id], references: [id], onDelete: SetNull)
+}
+
+model products {
+    id             Int                     @id @default(autoincrement())
+    name           String
+    price          Float
+    discount       Float                   @default(0)
+    description    String?
+    stock_quantity Int
+    sku_code       String                  @unique
+    created_at     DateTime                @default(now())
+    images         product_images[]
+    types          product_type_relation[]
+    tags           product_tags[]
+    comments       comments[]
+    discounts      discounts[]
+    Favorite       favorites[]
+    Cart           cart[]
+}
+
+model types {
+    id         Int                     @id @default(autoincrement())
+    name       String
+    image_blob String?
+    products   product_type_relation[]
+}
+
+model product_type_relation {
+    product_id Int
+    type_id    Int
+    product    products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+    type       types    @relation(fields: [type_id], references: [id], onDelete: Cascade)
+
+    @@id([product_id, type_id])
+}
+
+model tags {
+    id       Int            @id @default(autoincrement())
+    name     String
+    products product_tags[]
+}
+
+model product_tags {
+    product_id Int
+    tag_id     Int
+    product    products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+    tag        tags     @relation(fields: [tag_id], references: [id], onDelete: Cascade)
+
+    @@id([product_id, tag_id])
+}
+
+model product_images {
+    id         Int      @id @default(autoincrement())
+    product_id Int
+    image_blob String
+    product    products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+}
+
+model favorites {
+    id         Int      @id @default(autoincrement())
+    user_id    Int
+    product_id Int
+    user       users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+    product    products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+}
+
+model cart {
+    id         Int      @id @default(autoincrement())
+    user_id    Int
+    product_id Int
+    quantity   Int
+    user       users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+    product    products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+}
+
+model comments {
+    id         Int      @id @default(autoincrement())
+    product_id Int
+    user_id    Int
+    comment    String
+    rating     Float
+    created_at DateTime @default(now())
+    product    products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+    user       users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model discounts {
+    id         Int      @id @default(autoincrement())
+    product_id Int
+    new_price  Float
+    start_date DateTime
+    end_date   DateTime
+    product    products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+}
