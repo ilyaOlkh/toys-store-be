@@ -8,34 +8,20 @@ datasource db {
     directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
-model users {
-    id            Int         @id @default(autoincrement())
-    first_name    String
-    last_name     String
-    email         String      @unique
-    password_hash String
-    created_at    DateTime    @default(now())
-    orders        orders[]
-    favorites     favorites[]
-    cart_items    cart[]
-    comments      comments[]
-}
-
 model orders {
-    id             Int      @id @default(autoincrement())
-    user_id        Int?
-    first_name     String
-    last_name      String
-    street_address String
-    city           String
-    state          String?
-    zip_code       String
-    phone          String
-    email          String
-    payment_method String
-    paid           Boolean  @default(false)
-    created_at     DateTime @default(now())
-    user           users?   @relation(fields: [user_id], references: [id], onDelete: SetNull)
+    id              Int      @id @default(autoincrement())
+    user_identifier String   
+    first_name      String
+    last_name       String
+    street_address  String
+    city            String
+    state           String?
+    zip_code        String
+    phone           String
+    email           String
+    payment_method  String
+    paid            Boolean  @default(false)
+    created_at      DateTime @default(now())
 }
 
 model products {
@@ -90,36 +76,33 @@ model product_tags {
 model product_images {
     id         Int      @id @default(autoincrement())
     product_id Int
-    image_blob String
+    image_blob  String   @unique
     product    products @relation(fields: [product_id], references: [id], onDelete: Cascade)
 }
 
 model favorites {
-    id         Int      @id @default(autoincrement())
-    user_id    Int
-    product_id Int
-    user       users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
-    product    products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+    id              Int      @id @default(autoincrement())
+    user_identifier String   
+    product_id      Int
+    product         products @relation(fields: [product_id], references: [id], onDelete: Cascade)
 }
 
 model cart {
-    id         Int      @id @default(autoincrement())
-    user_id    Int
-    product_id Int
-    quantity   Int
-    user       users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
-    product    products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+    id              Int      @id @default(autoincrement())
+    user_identifier String   
+    product_id      Int
+    quantity        Int
+    product         products @relation(fields: [product_id], references: [id], onDelete: Cascade)
 }
 
 model comments {
-    id         Int      @id @default(autoincrement())
-    product_id Int
-    user_id    Int
-    comment    String
-    rating     Float
-    created_at DateTime @default(now())
-    product    products @relation(fields: [product_id], references: [id], onDelete: Cascade)
-    user       users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+    id              Int      @id @default(autoincrement())
+    product_id      Int
+    user_identifier String   
+    comment         String
+    rating          Float
+    created_at      DateTime @default(now())
+    product         products @relation(fields: [product_id], references: [id], onDelete: Cascade)
 }
 
 model discounts {
