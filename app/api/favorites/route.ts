@@ -43,18 +43,69 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        const favorite = await prisma.favorites.create({
+        // Создаем запись о любимом продукте и одновременно получаем данные о продукте
+        const favoriteWithProduct = await prisma.favorites.create({
             data: {
                 user_identifier,
                 product_id,
             },
+            include: {
+                product: {
+                    include: {
+                        images: {
+                            orderBy: {
+                                id: "asc",
+                            },
+                        },
+                        discounts: true,
+                    },
+                },
+            },
         });
-        return NextResponse.json(favorite, { status: 201 });
+
+        // Получаем информацию о продукте
+        const product = favoriteWithProduct.product;
+
+        const currentDate = new Date();
+        const activeDiscount = product.discounts.findLast(
+            (discount) =>
+                discount.start_date <= currentDate &&
+                discount.end_date >= currentDate
+        );
+
+        // Формируем ответ с информацией о добавленном элементе в избранное и продукте
+        const productInfo = {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            discount: activeDiscount ? activeDiscount.new_price : undefined,
+            description: product.description,
+            stock_quantity: product.stock_quantity,
+            sku_code: product.sku_code,
+            created_at: product.created_at,
+            imageUrl:
+                product.images.length > 0
+                    ? product.images[0].image_blob
+                    : "/noPhoto.png",
+        };
+
+        return NextResponse.json(
+            {
+                id: favoriteWithProduct.id,
+                product_id: favoriteWithProduct.product_id,
+                user_identifier: favoriteWithProduct.user_identifier,
+                product: productInfo,
+            },
+            { status: 201 }
+        );
     } catch (error) {
+        console.error("Error adding favorite:", error);
         return NextResponse.json(
             { error: "Error adding favorite" },
             { status: 500 }
         );
+    } finally {
+        await prisma.$disconnect();
     }
 }
 
