@@ -4,37 +4,46 @@ generator client {
 
 datasource db {
     provider  = "postgresql"
-    url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
-    directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+    url       = env("POSTGRES_PRISMA_URL")
+    directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model users {
+    id            Int      @id @default(autoincrement())
+    first_name    String
+    last_name     String
+    email         String   @unique
+    password_hash String
+    created_at    DateTime @default(now())
 }
 
 model orders {
     id              Int      @id @default(autoincrement())
-    user_identifier String   
+    user_identifier String
     first_name      String
     last_name       String
     street_address  String
-    city            String
-    state           String?
-    zip_code        String
-    phone           String
-    email           String
-    payment_method  String
-    paid            Boolean  @default(false)
-    created_at      DateTime @default(now())
+    city           String
+    state          String?
+    zip_code       String
+    phone          String
+    email          String
+    payment_method PaymentMethod
+    paid           Boolean   @default(false)
+    created_at     DateTime  @default(now())
 }
 
 model products {
-    id             Int                     @id @default(autoincrement())
+    id             Int                      @id @default(autoincrement())
     name           String
-    price          Float
-    discount       Float                   @default(0)
-    description    String?
+    price          Decimal                  @db.Decimal(10, 2)
+    discount       Decimal                  @default(0) @db.Decimal(10, 2)
+    description    String?                  @db.Text
     stock_quantity Int
     sku_code       String                  @unique
     created_at     DateTime                @default(now())
     images         product_images[]
-    types          product_type_relation[]
+    types          product_types_relation[]
     tags           product_tags[]
     comments       comments[]
     discounts      discounts[]
@@ -43,13 +52,13 @@ model products {
 }
 
 model types {
-    id         Int                     @id @default(autoincrement())
+    id         Int                      @id @default(autoincrement())
     name       String
-    image_blob String?
-    products   product_type_relation[]
+    image_blob String?                  @db.Text
+    products   product_types_relation[]
 }
 
-model product_type_relation {
+model product_types_relation {
     product_id Int
     type_id    Int
     product    products @relation(fields: [product_id], references: [id], onDelete: Cascade)
@@ -74,42 +83,52 @@ model product_tags {
 }
 
 model product_images {
-    id         Int      @id @default(autoincrement())
-    product_id Int
+    id          Int      @id @default(autoincrement())
+    product_id  Int
     image_blob  String   @unique
-    product    products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+    product     products @relation(fields: [product_id], references: [id], onDelete: Cascade)
 }
 
 model favorites {
     id              Int      @id @default(autoincrement())
-    user_identifier String   
+    user_identifier String
     product_id      Int
     product         products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+    @@unique([product_id])
 }
 
 model cart {
     id              Int      @id @default(autoincrement())
-    user_identifier String   
+    user_identifier String
     product_id      Int
     quantity        Int
     product         products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+    @@unique([product_id])
 }
 
 model comments {
     id              Int      @id @default(autoincrement())
     product_id      Int
-    user_identifier String   
-    comment         String
+    user_identifier String
+    comment         String   @db.Text
     rating          Float
     created_at      DateTime @default(now())
+    edited_at       DateTime?
     product         products @relation(fields: [product_id], references: [id], onDelete: Cascade)
 }
 
 model discounts {
     id         Int      @id @default(autoincrement())
     product_id Int
-    new_price  Float
-    start_date DateTime
-    end_date   DateTime
+    new_price  Decimal  @db.Decimal(10, 2)
+    start_date DateTime @db.Date
+    end_date   DateTime @db.Date
     product    products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+}
+
+enum PaymentMethod {
+    credit_card
+    cash
 }

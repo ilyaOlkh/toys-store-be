@@ -13,6 +13,11 @@ export async function GET() {
                     },
                 },
                 discounts: true,
+                comments: {
+                    select: {
+                        rating: true,
+                    },
+                },
             },
         });
 
@@ -33,6 +38,15 @@ export async function GET() {
                     discount.end_date >= currentDate
             );
 
+            // Вычисляем средний рейтинг
+            const average_rating =
+                product.comments.length > 0
+                    ? product.comments.reduce(
+                          (acc, comment) => acc + comment.rating,
+                          0
+                      ) / product.comments.length
+                    : 0;
+
             return {
                 id: product.id,
                 name: product.name,
@@ -46,6 +60,7 @@ export async function GET() {
                     product.images.length > 0
                         ? product.images[0].image_blob
                         : "/noPhoto.png",
+                average_rating: Number(average_rating.toFixed(1)),
             };
         });
 
