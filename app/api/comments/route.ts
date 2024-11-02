@@ -12,6 +12,8 @@ async function getUserFromCookie(request: NextRequest) {
         const appSession = request.cookies.get("appSession")?.value;
         console.log(2);
 
+        console.log(request.cookies.getAll());
+
         if (!appSession) {
             return null;
         }
