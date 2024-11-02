@@ -7,19 +7,27 @@ const prisma = new PrismaClient();
 // Helper function to get user from Auth0 session cookie
 async function getUserFromCookie(request: NextRequest) {
     try {
+        console.log(1);
+
         const appSession = request.cookies.get("appSession")?.value;
+        console.log(2);
+
         if (!appSession) {
             return null;
         }
-
+        console.log(`${process.env.URL}/api/auth/me`);
         const response = await axios.get(`${process.env.URL}/api/auth/me`, {
             headers: {
                 Cookie: `appSession=${appSession}`,
             },
         });
+        console.log(3);
+        console.log(response.data);
 
         return response.data;
     } catch (error) {
+        console.log(4);
+
         console.error("Error getting user from cookie:", error);
         return null;
     }
