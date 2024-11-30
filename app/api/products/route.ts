@@ -3,6 +3,10 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+export const revalidate = process.env.NEXT_PUBLIC_REVALIDATE
+    ? +process.env.NEXT_PUBLIC_REVALIDATE
+    : 60;
+
 export async function GET() {
     try {
         const products = await prisma.products.findMany({

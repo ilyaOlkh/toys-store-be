@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
                 { status: 404 }
             );
         }
-        console.log(product.id, filePath)
+        console.log(product.id, filePath);
 
         // Сохраняем путь к изображению в базе данных
         await prisma.product_images.create({
@@ -35,12 +35,16 @@ export async function POST(request: NextRequest) {
         });
 
         return NextResponse.json({
-            message: 'File path saved to DB',
+            message: "File path saved to DB",
         });
     } catch (error) {
         console.error("Error saving file path to DB\n", error);
         return NextResponse.json(
-            { error: "Something went wrong while saving file path to DB: " + error },
+            {
+                error:
+                    "Something went wrong while saving file path to DB: " +
+                    error,
+            },
             { status: 500 }
         );
     } finally {
