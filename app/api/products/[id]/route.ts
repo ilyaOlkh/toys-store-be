@@ -6,6 +6,7 @@ const prisma = new PrismaClient();
 export const revalidate = process.env.NEXT_PUBLIC_REVALIDATE
     ? +process.env.NEXT_PUBLIC_REVALIDATE
     : 60;
+
 export const dynamicParams = true;
 
 export async function GET(request: Request) {
