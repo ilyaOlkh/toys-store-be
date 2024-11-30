@@ -116,6 +116,7 @@ model comments {
     rating          Float
     created_at      DateTime @default(now())
     edited_at       DateTime?
+    edited_by       String?
     product         products @relation(fields: [product_id], references: [id], onDelete: Cascade)
 }
 
